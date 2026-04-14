@@ -1,6 +1,6 @@
 {
   "name": "@atlex/orm",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "ActiveRecord ORM, query builder, migrations, and factories for Atlex",
   "type": "module",
   "license": "MIT",

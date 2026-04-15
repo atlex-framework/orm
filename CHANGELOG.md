@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3
+
+### Patch Changes
+
+- fac4c29: Update documentation
+- Updated dependencies [fac4c29]
+  - @atlex/config@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

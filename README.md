@@ -1,6 +1,6 @@
 # @atlex/orm
 
-> A powerful, expressive ActiveRecord ORM for building modern TypeScript applications
+> A powerful, expressive ActiveRecord ORM for building modern Node.js applications
 
 [![npm](https://img.shields.io/npm/v/@atlex/orm?style=flat-square&color=7c3aed)](https://www.npmjs.com/package/@atlex/orm)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-7c3aed?style=flat-square)](https://www.typescriptlang.org/)
@@ -988,4 +988,6 @@ For detailed documentation, examples, and API reference, visit the [Atlex docume
 
 ## License
 
-MIT
+## MIT
+
+Part of [Atlex](https://atlex.dev) — A modern framework for Node.js.

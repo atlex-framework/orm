@@ -11,9 +11,32 @@
   "keywords": [
     "atlex",
     "orm",
-    "typescript",
     "active-record",
-    "database"
+    "activerecord",
+    "query-builder",
+    "database",
+    "sql",
+    "migrations",
+    "migration",
+    "seeder",
+    "factory",
+    "eloquent",
+    "eloquent-nodejs",
+    "eloquent-alternative",
+    "prisma-alternative",
+    "sequelize-alternative",
+    "typeorm-alternative",
+    "knex",
+    "postgres",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "laravel-orm",
+    "laravel-eloquent",
+    "laravel-alternative",
+    "nodejs",
+    "javascript",
+    "typescript"
   ],
   "engines": {
     "node": ">=20"
@@ -43,10 +66,12 @@
     }
   },
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
     "knex": "^3.1.0",
     "mysql2": "^3.9.0",
     "pg": "^8.11.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.8.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

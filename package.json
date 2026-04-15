@@ -20,12 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atlex-framework/atlex-monorepo.git",
+    "url": "git+https://github.com/atlex-framework/orm.git",
     "directory": "packages/orm"
   },
   "homepage": "https://atlex.dev",
   "bugs": {
-    "url": "https://github.com/atlex-framework/atlex-monorepo/issues"
+    "url": "https://github.com/atlex-framework/orm/issues"
   },
   "publishConfig": {
     "access": "public"

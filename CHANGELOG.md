@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.8
+
+### Patch Changes
+
+- 36c90f5: Att api.ts
+- Updated dependencies [36c90f5]
+  - @atlex/config@0.1.8
+
 ## 0.1.7
 
 ### Patch Changes

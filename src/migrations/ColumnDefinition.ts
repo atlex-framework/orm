@@ -11,6 +11,20 @@ export interface ColumnModifier {
   name?: string
 }
 
+/** Marker returned by `Blueprint.raw()` for SQL default expressions. */
+export interface RawSqlExpression {
+  readonly __atlexRawSql: string
+}
+
+export function isRawSqlExpression(value: unknown): value is RawSqlExpression {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    '__atlexRawSql' in value &&
+    typeof (value as RawSqlExpression).__atlexRawSql === 'string'
+  )
+}
+
 export class ColumnDefinition {
   public readonly name: string
   public readonly type: string
@@ -32,6 +46,13 @@ export class ColumnDefinition {
    */
   public nullable(): this {
     this.modifiers.push({ kind: 'nullable' })
+    return this
+  }
+
+  /**
+   * Knex-compatible alias; columns are NOT NULL unless `.nullable()` is called.
+   */
+  public notNullable(): this {
     return this
   }
 

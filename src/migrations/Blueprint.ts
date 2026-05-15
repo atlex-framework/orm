@@ -7,7 +7,7 @@
 
 import type { Knex } from 'knex'
 
-import { ColumnDefinition } from './ColumnDefinition.js'
+import { ColumnDefinition, isRawSqlExpression, type RawSqlExpression } from './ColumnDefinition.js'
 
 type ForeignKeyAction = 'restrict' | 'cascade' | 'set null' | 'no action'
 
@@ -56,6 +56,7 @@ type Operation =
   | { kind: 'column'; column: ColumnDefinition }
   | { kind: 'foreign'; fk: ForeignKeyDefinition }
   | { kind: 'tableIndex'; columns: string[]; name?: string }
+  | { kind: 'tableUnique'; columns: string[]; name?: string }
   | { kind: 'dropColumn'; name: string }
   | { kind: 'drop'; ifExists: boolean }
   | { kind: 'rename'; to: string }
@@ -76,9 +77,16 @@ export class Blueprint {
    * Add `created_at` and `updated_at` timestamps with DB-native "now" defaults
    * (via Knex), not JavaScript `Date` literals (which break PostgreSQL defaults).
    */
-  public timestamps(): void {
+  public timestamps(_useTimestamps = true, _defaultToNow = true): void {
     this.timestamp('created_at').useCurrent()
     this.timestamp('updated_at').useCurrent()
+  }
+
+  /**
+   * SQL expression for column defaults (e.g. `table.raw('gen_random_uuid()')`).
+   */
+  public raw(sql: string): RawSqlExpression {
+    return { __atlexRawSql: sql }
   }
 
   /**
@@ -136,6 +144,18 @@ export class Blueprint {
     return this.addColumn(new ColumnDefinition(name, 'bigIncrements'))
   }
 
+  public uuid(name: string): ColumnDefinition {
+    return this.addColumn(new ColumnDefinition(name, 'uuid'))
+  }
+
+  public enum(
+    name: string,
+    values: readonly string[],
+    options: { useNative?: boolean; enumName?: string } = {},
+  ): ColumnDefinition {
+    return this.addColumn(new ColumnDefinition(name, 'enum', [values, options]))
+  }
+
   // Index helpers
   /**
    * Add an index on one or more columns (`table.index('email')` or `table.index(['a','b'])`).
@@ -152,6 +172,18 @@ export class Blueprint {
       this.ops.push({ kind: 'tableIndex', columns: cols, name })
     } else {
       this.ops.push({ kind: 'tableIndex', columns: cols })
+    }
+  }
+
+  public unique(columns: string | string[], name?: string): void {
+    const cols = typeof columns === 'string' ? [columns] : columns
+    if (cols.length === 0) {
+      throw new Error('Migration error: unique() requires at least one column name.')
+    }
+    if (name !== undefined && name.length > 0) {
+      this.ops.push({ kind: 'tableUnique', columns: cols, name })
+    } else {
+      this.ops.push({ kind: 'tableUnique', columns: cols })
     }
   }
 
@@ -211,6 +243,15 @@ export class Blueprint {
         }
         continue
       }
+      if (op.kind === 'tableUnique') {
+        const t = table as Knex.CreateTableBuilder
+        if (op.name !== undefined && op.name.length > 0) {
+          t.unique(op.columns, op.name)
+        } else {
+          t.unique(op.columns)
+        }
+        continue
+      }
       if (op.kind === 'dropColumn') {
         table.dropColumn(op.name)
         continue
@@ -246,6 +287,19 @@ function buildKnexColumn(
       return table.increments(def.name)
     case 'bigIncrements':
       return table.bigIncrements(def.name)
+    case 'uuid':
+      return table.uuid(def.name)
+    case 'enum': {
+      const values = def.args[0] as readonly string[]
+      const options = def.args[1] as { useNative?: boolean; enumName?: string } | undefined
+      if (options?.useNative === true && options.enumName !== undefined) {
+        return table.enum(def.name, values as string[], {
+          useNative: true,
+          enumName: options.enumName,
+        })
+      }
+      return table.enum(def.name, values as string[])
+    }
     default:
       throw new Error(
         `Migration error: unsupported column type "${def.type}" for column "${def.name}".`,
@@ -254,18 +308,26 @@ function buildKnexColumn(
 }
 
 function applyModifiers(col: Knex.ColumnBuilder, def: ColumnDefinition, knex: Knex): void {
+  let explicitlyNullable = false
   for (const m of def.modifiers) {
-    if (m.kind === 'nullable') col.nullable()
-    else if (m.kind === 'unsigned') (col as unknown as { unsigned: () => void }).unsigned?.()
+    if (m.kind === 'nullable') {
+      col.nullable()
+      explicitlyNullable = true
+    } else if (m.kind === 'unsigned') (col as unknown as { unsigned: () => void }).unsigned?.()
     else if (m.kind === 'useCurrent') col.defaultTo(knex.fn.now())
     else if (m.kind === 'default') {
       if (m.value instanceof Date) {
         col.defaultTo(knex.fn.now())
+      } else if (isRawSqlExpression(m.value)) {
+        col.defaultTo(knex.raw(m.value.__atlexRawSql))
       } else {
         col.defaultTo(m.value as never)
       }
     } else if (m.kind === 'primary') col.primary()
     else if (m.kind === 'unique') col.unique(m.name)
     else if (m.kind === 'index') col.index(m.name)
+  }
+  if (!explicitlyNullable) {
+    col.notNullable()
   }
 }

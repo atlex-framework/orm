@@ -77,13 +77,9 @@
     "prepublishOnly": "pnpm run typecheck && pnpm run build"
   },
   "peerDependencies": {
-    "@atlex/config": "workspace:*",
     "better-sqlite3": ">=11.0.0"
   },
   "peerDependenciesMeta": {
-    "@atlex/config": {
-      "optional": true
-    },
     "better-sqlite3": {
       "optional": true
     }

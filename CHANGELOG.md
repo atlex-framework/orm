@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.10
+
+### Patch Changes
+
+- da7ec68: Add enum, uuid columns
+- Updated dependencies [da7ec68]
+  - @atlex/config@0.1.9
+
 ## 0.1.8
 
 ### Patch Changes

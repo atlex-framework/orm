@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11
+
+### Patch Changes
+
+- de7b9ba: Fix cli
+
 ## 0.1.10
 
 ### Patch Changes

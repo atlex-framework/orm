@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- Synchronized 0.2.0 release across the whole monorepo.
+
+  All 13 packages are republished at a single aligned `0.2.0` so downstream
+  consumers re-resolve their dependency trees and pick up patched transitive
+  dependencies:
+  - `ws@>=8.20.1` (via `engine.io@6.6.8` / `socket.io-adapter@2.5.7`) —
+    fixes GHSA-58qx-3vcg-4xpx (uninitialized memory disclosure).
+  - `qs@>=6.15.2` (via `express@5`) — fixes GHSA-q8mj-m7cp-5q26
+    (remotely-triggerable DoS in `qs.stringify`).
+
+  `@atlex/mail` additionally bumps its `nodemailer` dependency `^6.9.0 -> ^8.0.7`
+  (and `@types/nodemailer` to `^8`), moving off the nodemailer 6.x line at the
+  source so consumers no longer need a local `nodemailer` override. The
+  `createTransport` / `sendMail` / `Transporter` API used by the SMTP and SES
+  drivers is unchanged; typecheck, all 31 mail tests, and the build pass.
+
+  Internal `@atlex/*` peer-dependency ranges were relaxed from the exact
+  `workspace:*` pin to `workspace:>=0.1.0` so the synchronized minor bump does
+  not force a major version on peer-dependent packages. No source/API changes.
+
 ## 0.1.11
 
 ### Patch Changes

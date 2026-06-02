@@ -136,6 +136,11 @@ export class Blueprint {
     return this.addColumn(new ColumnDefinition(name, 'dateTime'))
   }
 
+  /** SQL TIME column (e.g. quiet-hours windows stored as `22:00:00`). */
+  public time(name: string): ColumnDefinition {
+    return this.addColumn(new ColumnDefinition(name, 'time'))
+  }
+
   public increments(name: string): ColumnDefinition {
     return this.addColumn(new ColumnDefinition(name, 'increments'))
   }
@@ -283,6 +288,8 @@ function buildKnexColumn(
       return table.timestamp(def.name, { useTz: false })
     case 'dateTime':
       return table.dateTime(def.name)
+    case 'time':
+      return table.time(def.name)
     case 'increments':
       return table.increments(def.name)
     case 'bigIncrements':

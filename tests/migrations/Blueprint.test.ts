@@ -64,6 +64,16 @@ describe('Blueprint operation collection', () => {
     })
   })
 
+  it('records time column operations', () => {
+    const blueprint = new Blueprint('quiet_hours')
+    blueprint.time('start_time').notNullable()
+    const columns = blueprint
+      .getOperations()
+      .filter((op) => op.kind === 'column')
+      .map((op) => op.column)
+    expect(columns).toEqual([expect.objectContaining({ name: 'start_time', type: 'time' })])
+  })
+
   it('rejects unique() with no columns', () => {
     const blueprint = new Blueprint('users')
     expect(() => blueprint.unique([])).toThrow(/unique\(\) requires at least one column/)
@@ -142,6 +152,20 @@ describe('Blueprint migrations (sqlite)', () => {
     await expect(
       knex('bp_parents').insert({ id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', user_id: userId }),
     ).rejects.toThrow()
+  })
+
+  it('creates time columns for daily window fields', async () => {
+    await Schema.create('bp_quiet_hours', (table) => {
+      table.uuid('id').primary()
+      table.time('start_time').notNullable()
+      table.time('end_time').notNullable()
+    })
+
+    const columns = await getSqliteColumns(knex, 'bp_quiet_hours')
+    expect(columns).toHaveProperty('start_time')
+    expect(columns).toHaveProperty('end_time')
+    expect(columns['start_time']?.notnull).toBe(1)
+    expect(columns['end_time']?.notnull).toBe(1)
   })
 
   it('supports native enum options when provided', async () => {

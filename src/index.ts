@@ -22,7 +22,8 @@ export { ManyToManyRelationBuilder } from './relations/ManyToManyRelationBuilder
 
 export { Schema } from './migrations/Schema.js'
 export { Blueprint } from './migrations/Blueprint.js'
-export { ColumnDefinition } from './migrations/ColumnDefinition.js'
+export { ColumnDefinition, isRawSqlExpression } from './migrations/ColumnDefinition.js'
+export type { RawSqlExpression } from './migrations/ColumnDefinition.js'
 export { MigrationRunner } from './migrations/MigrationRunner.js'
 export type {
   MigrateRunResult,

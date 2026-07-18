@@ -271,13 +271,14 @@ export class MigrationRunner {
   private async getPendingMigrations(): Promise<MigrationFile[]> {
     const files = await this.discoverMigrationFiles()
     const ran = await this.getRanMigrations()
-    const ranSet = new Set(ran.map((r) => r.migration))
+    const ranSet = new Set(ran.map((r) => migrationKey(r.migration)))
     return files.filter((f) => !ranSet.has(f.name))
   }
 
   private async findMigrationFileByName(name: string): Promise<MigrationFile | null> {
     const files = await this.discoverMigrationFiles()
-    const found = files.find((f) => f.name === name)
+    const key = migrationKey(name)
+    const found = files.find((f) => f.name === key)
     return found ?? null
   }
 
@@ -286,22 +287,25 @@ export class MigrationRunner {
     const entries = await walk(dir)
     const files = entries
       .filter((p) => p.endsWith('.ts') || p.endsWith('.js'))
-      .map((p) => ({
-        fullPath: p,
-        name: path.basename(p),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((p) => {
+        const fileName = path.basename(p)
+        return {
+          fullPath: p,
+          fileName,
+          name: migrationKey(fileName),
+        }
+      })
+      .sort((a, b) => a.fileName.localeCompare(b.fileName))
     // Prefer .js over .ts if both exist for same base name
     const byBase = new Map<string, MigrationFile>()
     for (const f of files) {
-      const base = f.name.replace(/\.(ts|js)$/i, '')
-      const existing = byBase.get(base)
+      const existing = byBase.get(f.name)
       if (!existing) {
-        byBase.set(base, f)
+        byBase.set(f.name, { name: f.name, fullPath: f.fullPath })
         continue
       }
-      if (existing.name.endsWith('.ts') && f.name.endsWith('.js')) {
-        byBase.set(base, f)
+      if (f.fileName.endsWith('.js')) {
+        byBase.set(f.name, { name: f.name, fullPath: f.fullPath })
       }
     }
     return Array.from(byBase.values()).sort((a, b) => a.name.localeCompare(b.name))
@@ -309,8 +313,14 @@ export class MigrationRunner {
 }
 
 interface MigrationFile {
+  /** Stable id without extension (matches `migrations.migration`, with or without historic .ts/.js suffix). */
   name: string
   fullPath: string
+}
+
+/** Strip `.ts` / `.js` so compiled and source files share one migration identity. */
+function migrationKey(fileName: string): string {
+  return fileName.replace(/\.(ts|js)$/i, '')
 }
 
 function isMigrationModule(value: unknown): value is MigrationModule {
